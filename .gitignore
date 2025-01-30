@@ -1,5 +1,5 @@
 # here we will ignore those files which are for our personal use (like node_module)
 # Ignore node_module directory
 node_module/
-
+.env
 # Other entries.....
