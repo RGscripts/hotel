@@ -16,16 +16,47 @@ const express = require('express') //Telling the system that we require to build
 const app = express();
 const db = require('./db')
 require('dotenv').config();
+const passport = require('passport');
+const LocalStratergy = require('passport-local').Strategy;
+const Person = require('./models/Person') 
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());//req.body
 
 const PORT = process.env.PORT || 3000;
 
-// app.get('/', function (req, res) {
-//     res.send('Welcome to the Hotel')
-//   })
+// As we know that our server will be getting multiple login request so to know the at what router 
+// and at what time the request are made we can use logRequest
+const logRequest = (req, res, next) => {
+    console.log(`[${new Date().toLocaleString()}] Request Made to : ${req.originalUrl}`);
+    next(); //move to the next part
+}
+app.use(logRequest);
 
+
+// Authentication
+passport.use(new LocalStratergy (async(username, password, done) =>{
+    // Authentication Logic
+    try{
+        console.log('Received Credentional:', username, password);
+        const user = await Person.findOne({username : username});
+        if(!user){
+            return done(null, false, {message : 'Incorrect username.'})
+        }
+        if(isPasswordMatch){
+            return done(null, user);
+        }else{
+            return done(null, false, {message : 'Incorrect password.'})
+        }
+    }catch(err){
+        return done(err);
+    }
+}))
+app.use(passport.initialize())
+
+app.get('/', passport.authenticate('local', {session : false}), function (req, res) {
+    res.send('Welcome to the Hotel');
+});
 
 
 
@@ -56,6 +87,7 @@ app.use('/person', personRoutes);
 // For Menu
 //import the router file 
 const menuRoutes = require('./routes/menuRoutes');
+const { models } = require('mongoose');
 
 //use the routers
 app.use('/menu', menuRoutes);
